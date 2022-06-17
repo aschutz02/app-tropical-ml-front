@@ -11,6 +11,8 @@ import {SellersComponent} from "../sellers/sellers.component";
 import {HeaderService} from "./service/header-service";
 import {Subscription} from "rxjs";
 import {LojistasComponent} from "../lojistas/lojistas.component";
+import {ProductService} from "../products/service/product-service";
+import {ProductModel} from "../products/model/product.model";
 
 @Component({
   selector: 'app-header',
@@ -20,6 +22,7 @@ import {LojistasComponent} from "../lojistas/lojistas.component";
 export class HeaderComponent implements OnInit, OnDestroy {
 
   subscription: Subscription[] = [];
+  products: ProductModel[] = [];
 
   @Output()
   public loading = new EventEmitter<boolean>();
@@ -30,9 +33,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @Output()
   public error = new EventEmitter<boolean>();
 
-  constructor(private store: Store<AppState>, private dialog: MatDialog, private service: HeaderService) { }
+  constructor(private store: Store<AppState>, private dialog: MatDialog, private service: HeaderService,
+              private produtservice: ProductService) { }
 
   ngOnInit(): void {
+    this.produtservice.findAllProducts().subscribe(prods => this.products = prods);
   }
 
   openModalNicknames(): void {
@@ -73,7 +78,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   gerarRelatorio(): void {
     this.loading.emit(true);
-    this.subscription.push(this.service.gerarRelatorio().subscribe(() => {
+    this.subscription.push(this.service.gerarRelatorio(this.products).subscribe(() => {
       this.loading.emit(false);
       this.success.emit(true);
     },
